@@ -9,6 +9,7 @@ const mapSubtitle = document.querySelector("#map-day-subtitle");
 const mapWatermark = document.querySelector("#map-watermark");
 const mapFocusButton = document.querySelector("#map-focus");
 const notesDialog = document.querySelector("#notes-dialog");
+const locale = window.TRIP_DATA.locale;
 
 let selectedDay = "all";
 let map;
@@ -17,7 +18,26 @@ let activePopup;
 const markers = [];
 
 const modeIcons = { rail: "train", walk: "walk", flight: "plane", bus: "bus" };
-const modeNames = { rail: "铁路", walk: "步行", flight: "航班", bus: "巴士" };
+function localize(field, value) {
+  return locale[field]?.[value] || value;
+}
+
+function localizeTransport(value) {
+  return value
+    .replaceAll("步行", "徒歩")
+    .replaceAll("高铁", "高速鉄道")
+    .replaceAll("飞机", "飛行機")
+    .replaceAll("市域机场线", "空港連絡線")
+    .replaceAll("京急机场线", "京急空港線")
+    .replaceAll("东京单轨电车", "東京モノレール")
+    .replaceAll("巴士", "バス")
+    .replaceAll("地铁", "地下鉄")
+    .replaceAll("秩父铁道", "秩父鉄道")
+    .replaceAll("东海道新干线", "東海道新幹線")
+    .replaceAll("江之电", "江ノ電")
+    .replaceAll("西武线", "西武線")
+    .replaceAll("南海电铁", "南海電鉄");
+}
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>'"]/g, (character) => ({
@@ -32,10 +52,10 @@ function renderDayTabs() {
       data-day="${day.id}"
       type="button"
       style="--day-color:${day.color}"
-      aria-label="第 ${day.id} 天，${escapeHtml(day.shortTitle)}"
+      aria-label="${day.id}日目 ${escapeHtml(localize("shortTitle", day.shortTitle))}"
     >
       <span class="day-tab-number">${String(day.id).padStart(2, "0")}</span>
-      <span class="day-tab-copy"><strong>${day.date}</strong><small>${day.weekday} · ${day.city.split(" · ")[0]}</small></span>
+      <span class="day-tab-copy"><strong>${day.date}</strong><small>${day.weekday} · ${localize("city", day.city).split("・")[0]}</small></span>
     </button>
   `).join("");
 }
@@ -59,13 +79,13 @@ function renderStops(day) {
       <span class="stop-marker">${index + 1}</span>
       <button class="stop-card" data-stop-day="${day.id}" data-stop-index="${index}" type="button">
         <div class="stop-heading">
-          <h3 class="stop-name">${escapeHtml(stop.name)}</h3>
+          <h3 class="stop-name">${escapeHtml(stop.jp)}</h3>
           <span class="stop-time">${escapeHtml(stop.time)}</span>
         </div>
-        <span class="stop-jp">${escapeHtml(stop.jp)}</span>
-        <span class="stop-category">${escapeHtml(stop.category)}</span>
-        <p>${escapeHtml(stop.description)}</p>
-        ${stop.address ? `<span class="stop-address"><svg><use href="#icon-location"></use></svg>${escapeHtml(stop.address)}</span>` : ""}
+        <span class="stop-jp" lang="zh-CN">${escapeHtml(stop.name)}</span>
+        <span class="stop-category" lang="zh-CN">${escapeHtml(stop.category)}</span>
+        <p lang="zh-CN">${escapeHtml(stop.description)}</p>
+        ${stop.address ? `<span class="stop-address" lang="zh-CN"><svg><use href="#icon-location"></use></svg>${escapeHtml(stop.address)}</span>` : ""}
       </button>
       <div></div>
       <div>${renderTransfer(stop.toNext, day.color)}</div>
@@ -76,12 +96,12 @@ function renderStops(day) {
 function renderDay(day) {
   return `
     <section class="day-overview" style="--day-color:${day.color}" data-day-number="${String(day.id).padStart(2, "0")}">
-      <div class="day-kicker">DAY ${String(day.id).padStart(2, "0")} · ${day.date} ${day.weekday}</div>
-      <h2>${escapeHtml(day.title)}</h2>
-      <p class="day-description">${escapeHtml(day.summary)}</p>
+      <div class="day-kicker">DAY ${String(day.id).padStart(2, "0")} · ${day.date} ${day.weekday}曜日</div>
+      <h2>${escapeHtml(localize("title", day.title))}</h2>
+      <p class="day-description" lang="zh-CN">${escapeHtml(day.summary)}</p>
       <div class="day-tags">
-        <span class="day-tag lodging">住宿 / ${escapeHtml(day.lodging)}</span>
-        <span class="day-tag">${day.stops.length} 个停留点</span>
+        <span class="day-tag lodging" lang="zh-CN">宿泊 / ${escapeHtml(day.lodging)}</span>
+        <span class="day-tag">${day.stops.length} か所</span>
       </div>
     </section>
     <div class="timeline">${renderStops(day)}</div>
@@ -93,19 +113,19 @@ function renderOverview() {
   return `
     <section class="trip-summary">
       <p class="eyebrow">THE COMPLETE JOURNEY</p>
-      <h2>八天，两种风景。</h2>
-      <p>从东京街巷到关西山河，保留自然、人文与三场作品巡礼。点击任意一天，查看对应的地图和详细路线。</p>
+      <h2>八日間、二つの風景。</h2>
+      <p lang="zh-CN">从东京街巷到关西山河，保留自然、人文与三场作品巡礼。点击任意一天，查看对应的地图和详细路线。</p>
       <div class="trip-stats">
-        <div class="trip-stat"><strong>8</strong><span>旅行天数</span></div>
-        <div class="trip-stat"><strong>5</strong><span>城市与周边</span></div>
-        <div class="trip-stat"><strong>${stopCount}</strong><span>路线节点</span></div>
+        <div class="trip-stat"><strong>8</strong><span>日間</span></div>
+        <div class="trip-stat"><strong>5</strong><span>街と周辺</span></div>
+        <div class="trip-stat"><strong>${stopCount}</strong><span>スポット</span></div>
       </div>
     </section>
     <div class="overview-list">
       ${tripDays.map((day) => `
         <button class="overview-day" data-overview-day="${day.id}" style="--day-color:${day.color}" type="button">
           <span class="overview-day-number">${String(day.id).padStart(2, "0")}</span>
-          <span><strong>${escapeHtml(day.shortTitle)}</strong><small>${day.date} ${day.weekday} · ${escapeHtml(day.city)}</small></span>
+          <span><strong>${escapeHtml(localize("shortTitle", day.shortTitle))}</strong><small>${day.date} ${day.weekday} · ${escapeHtml(localize("city", day.city))}</small></span>
           <svg><use href="#icon-chevron"></use></svg>
         </button>
       `).join("")}
@@ -117,17 +137,17 @@ function setMapText(dayId) {
   const day = tripDays.find((item) => item.id === Number(dayId));
   document.documentElement.style.setProperty("--accent", day ? day.color : "#ed3b23");
   if (!day) {
-    mapLabel.textContent = "8 日路线总览";
+    mapLabel.textContent = "8日間のルート";
     mapStamp.textContent = "ALL";
-    mapTitle.textContent = "东京 → 大阪";
-    mapSubtitle.textContent = "5 座城市周边 · 自然、街巷与圣地巡礼";
+    mapTitle.textContent = "東京 → 大阪";
+    mapSubtitle.textContent = "5つの街と自然、聖地を巡る";
     mapWatermark.textContent = "08";
     return;
   }
-  mapLabel.textContent = `DAY ${String(day.id).padStart(2, "0")} · ${day.city}`;
+  mapLabel.textContent = `DAY ${String(day.id).padStart(2, "0")} · ${localize("city", day.city)}`;
   mapStamp.textContent = String(day.id).padStart(2, "0");
-  mapTitle.textContent = day.shortTitle;
-  mapSubtitle.textContent = day.transport;
+  mapTitle.textContent = localize("shortTitle", day.shortTitle);
+  mapSubtitle.textContent = localizeTransport(day.transport);
   mapWatermark.textContent = String(day.id).padStart(2, "0");
 }
 
@@ -142,7 +162,7 @@ function selectDay(dayId, fit = true) {
   const selectedTab = document.querySelector(`.day-tab[data-day="${selectedDay}"]`);
   if (selectedTab && window.innerWidth <= 900) {
     const navigation = document.querySelector(".day-navigation");
-    navigation.scrollTo({ left: selectedTab.offsetLeft - navigation.clientWidth + selectedTab.clientWidth, behavior: "smooth" });
+    navigation.scrollTo({ left: selectedTab.offsetLeft - navigation.clientWidth + selectedTab.clientWidth, behavior: "instant" });
   }
   itineraryContent.innerHTML = day ? renderDay(day) : renderOverview();
   itineraryContent.scrollTop = 0;
@@ -194,9 +214,9 @@ function showStop(dayId, stopIndex, flyToStop = true) {
     .setHTML(`
       <div style="--popup-color:${day.color}">
         <span class="popup-kicker">DAY ${day.id} · ${escapeHtml(stop.time)} · ${escapeHtml(stop.category)}</span>
-        <h3 class="popup-title">${escapeHtml(stop.name)}</h3>
-        <p class="popup-jp">${escapeHtml(stop.jp)}</p>
-        <p class="popup-description">${escapeHtml(stop.description)}</p>
+        <h3 class="popup-title">${escapeHtml(stop.jp)}</h3>
+        <p class="popup-jp" lang="zh-CN">${escapeHtml(stop.name)}</p>
+        <p class="popup-description" lang="zh-CN">${escapeHtml(stop.description)}</p>
       </div>
     `)
     .addTo(map);
@@ -220,10 +240,32 @@ function initializeMap() {
     minZoom: 4,
     maxZoom: 18,
     attributionControl: { compact: true },
-    cooperativeGestures: false
+    cooperativeGestures: true,
+    dragRotate: false,
+    touchPitch: false
   });
+  map.touchZoomRotate.disableRotation();
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
   map.addControl(new maplibregl.ScaleControl({ maxWidth: 90, unit: "metric" }), "bottom-right");
+
+  const mapSection = document.querySelector(".map-section");
+  const mapCanvas = map.getCanvas();
+  const gestureScreen = map.getContainer().querySelector(".maplibregl-cooperative-gesture-screen");
+  const showMapGesture = () => {
+    if (window.innerWidth <= 900 && gestureScreen) gestureScreen.style.display = "block";
+  };
+  mapSection.addEventListener("wheel", (event) => {
+    if (event.target.closest(".maplibregl-ctrl, .map-topbar, .map-bottom-card")) return;
+    if (!event.ctrlKey && !event.metaKey) event.preventDefault();
+  }, { passive: false });
+  mapSection.addEventListener("touchmove", (event) => {
+    if (!event.target.closest("#map") || event.touches.length > 1) return;
+    showMapGesture();
+  }, { passive: false });
+  mapSection.addEventListener("touchend", () => {
+    if (gestureScreen) gestureScreen.style.display = "";
+  }, { passive: true });
+  mapCanvas.setAttribute("tabindex", "0");
 
   map.on("load", () => {
     tripDays.forEach((day) => {
@@ -251,7 +293,7 @@ function initializeMap() {
         element.className = "trip-marker";
         element.style.setProperty("--marker-color", day.color);
         element.textContent = stopIndex === 0 ? String(day.id) : `${day.id}.${stopIndex + 1}`;
-        element.setAttribute("aria-label", `第 ${day.id} 天：${stop.name}`);
+        element.setAttribute("aria-label", `${day.id}日目 ${stop.jp}`);
         element.title = stop.name;
         element.addEventListener("click", () => showStop(day.id, stopIndex));
         const offset = selectedDay === "all" && day.id === 5 && stopIndex === 0 ? [18, -18] : [0, 0];
@@ -270,7 +312,7 @@ function initializeMap() {
     if (mapReady) return;
     console.error("Map loading error", event.error);
     const loading = document.querySelector("#map-loading");
-    loading.innerHTML = "<strong>地图暂时未能载入</strong><span>请检查网络后刷新页面</span>";
+    loading.innerHTML = "<strong>地図を読み込めませんでした</strong><span>通信状態を確認し、ページを再読込みしてください</span>";
   });
 }
 
@@ -278,7 +320,6 @@ document.addEventListener("click", (event) => {
   const dayButton = event.target.closest("[data-day]");
   if (dayButton) {
     selectDay(dayButton.dataset.day);
-    if (window.innerWidth <= 900) document.querySelector(".map-section").scrollIntoView({ behavior: "smooth", block: "start" });
     return;
   }
   const overviewDay = event.target.closest("[data-overview-day]");
@@ -290,7 +331,7 @@ document.addEventListener("click", (event) => {
 document.querySelector("#fit-route").addEventListener("click", () => fitMap(selectedDay));
 mapFocusButton.addEventListener("click", () => {
   const focusMode = document.body.classList.toggle("map-focus-mode");
-  mapFocusButton.querySelector("span").textContent = focusMode ? "退出" : "全屏";
+  mapFocusButton.querySelector("span").textContent = focusMode ? "戻る" : "拡大";
   mapFocusButton.setAttribute("aria-pressed", String(focusMode));
   map.resize();
   fitMap(selectedDay);
