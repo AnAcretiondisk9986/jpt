@@ -4,7 +4,7 @@
 
 ## 在线访问
 
-启用 GitHub Pages 后，访问 `https://anacretiondisk9986.github.io/japan-winter-journey/`。
+访问 `https://blog.acretiondisk.top/japan-winter-journey/`。
 
 ## 本地预览
 
