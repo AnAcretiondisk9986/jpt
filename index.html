@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f3ed" />
+    <meta
+      name="description"
+      content="2027 年冬季日本 8 天旅行路线：东京、秩父、镰仓、京都、大阪。互动矢量地图、逐日景点介绍与换乘指南。"
+    />
+    <title>冬日，向东。｜日本 8 日路线</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin />
+    <link
+      href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.16.0/dist/maplibre-gl.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></symbol>
+      <symbol id="icon-arrow-up-right" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10" /></symbol>
+      <symbol id="icon-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol>
+      <symbol id="icon-train" viewBox="0 0 24 24"><path d="M6 16V6c0-2 2-3 6-3s6 1 6 3v10c0 2-2 3-6 3s-6-1-6-3Z"/><path d="M6 10h12M9 19l-2 3m8-3 2 3M9 15h.01M15 15h.01"/></symbol>
+      <symbol id="icon-walk" viewBox="0 0 24 24"><circle cx="13" cy="4" r="2"/><path d="m7 21 4-7m5 7-3-6-2-4-4 3-2 4m6-7 3 4h4"/></symbol>
+      <symbol id="icon-plane" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+      <symbol id="icon-bus" viewBox="0 0 24 24"><path d="M5 17V6c0-2 2-3 7-3s7 1 7 3v11c0 2-2 3-7 3s-7-1-7-3Z"/><path d="M5 10h14M8 20v2m8-2v2M8 16h.01M16 16h.01"/></symbol>
+      <symbol id="icon-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></symbol>
+      <symbol id="icon-location" viewBox="0 0 24 24"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+      <symbol id="icon-expand" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></symbol>
+      <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+      <symbol id="icon-github" viewBox="0 0 24 24"><path d="M15 22v-4c.1-1-.4-2-1-2.5 3 0 6-1.5 6-6a4.6 4.6 0 0 0-1.3-3.5A4.2 4.2 0 0 0 18.6 2S17.5 1.7 15 3.8a11 11 0 0 0-6 0C6.5 1.7 5.4 2 5.4 2a4.2 4.2 0 0 0-.1 4A4.6 4.6 0 0 0 4 9.5c0 4.5 3 6 6 6-.6.5-1 1.3-1 2.5v4"/><path d="M9 18c-3 .9-3-1.5-4-2"/></symbol>
+    </svg>
+
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="冬日，向东。首页">
+        <span class="brand-mark" aria-hidden="true">冬</span>
+        <span class="brand-copy">冬日，向东。<small>JAPAN · WINTER 2027</small></span>
+      </a>
+      <div class="header-route" aria-label="行程路线">
+        <span>东京</span><i></i><span>秩父</span><i></i><span>镰仓</span><i></i><span>京都</span><i></i><span>大阪</span>
+      </div>
+      <div class="header-actions">
+        <button class="text-button" id="open-notes" type="button">
+          <svg><use href="#icon-info"></use></svg>行前须知
+        </button>
+        <a
+          class="github-link"
+          href="https://github.com/AnAcretiondisk9986/japan-winter-journey"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="在 GitHub 查看源码"
+        ><svg><use href="#icon-github"></use></svg></a>
+      </div>
+    </header>
+
+    <main>
+      <section class="trip-intro" aria-labelledby="trip-title">
+        <div>
+          <p class="eyebrow">A JOURNEY THROUGH WINTER</p>
+          <h1 id="trip-title">从东京的街，到关西的山。</h1>
+        </div>
+        <div class="trip-meta">
+          <div><span>旅行日期</span><strong>2027.01.19 — 01.26</strong></div>
+          <div><span>行程长度</span><strong>8 天 · 7 晚</strong></div>
+          <div><span>总预算</span><strong>¥ 13,000</strong></div>
+        </div>
+      </section>
+
+      <nav class="day-navigation" aria-label="按天筛选行程">
+        <button class="overview-button is-active" data-day="all" type="button">
+          <span class="overview-symbol" aria-hidden="true">◎</span>
+          <span>全程总览<small>OVERVIEW</small></span>
+        </button>
+        <div id="day-tabs" class="day-tabs"></div>
+        <div class="palette-key"><span></span>每日一色</div>
+      </nav>
+
+      <div class="workspace">
+        <section class="map-section" aria-label="旅行矢量地图">
+          <div id="map" role="application" aria-label="日本旅行互动地图"></div>
+          <div class="map-topbar">
+            <div class="map-label">
+              <span class="live-dot"></span>
+              <span id="map-label">8 日路线总览</span>
+            </div>
+            <div class="map-tools">
+              <button id="fit-route" type="button" title="显示完整路线" aria-label="显示完整路线">
+                <svg><use href="#icon-expand"></use></svg>
+              </button>
+            </div>
+          </div>
+          <div class="map-loading" id="map-loading">
+            <span class="loading-spinner"></span>
+            <span>正在载入矢量地图</span>
+          </div>
+          <div class="map-bottom-card">
+            <div class="map-day-stamp" id="map-day-stamp">ALL</div>
+            <div>
+              <strong id="map-day-title">东京 → 大阪</strong>
+              <span id="map-day-subtitle">5 座城市周边 · 自然、街巷与圣地巡礼</span>
+            </div>
+            <button id="next-day" type="button" aria-label="查看下一天" title="查看下一天">
+              <svg><use href="#icon-arrow"></use></svg>
+            </button>
+          </div>
+          <p class="map-disclaimer">路线为行程顺序示意，实际乘车与步行请以当日导航为准。</p>
+        </section>
+
+        <aside class="itinerary-panel" aria-label="每日行程详情">
+          <div id="itinerary-content" class="itinerary-content"></div>
+          <footer class="panel-footer">
+            <span>8 DAYS / 7 NIGHTS</span>
+            <span>义乌出发 · 上海往返</span>
+          </footer>
+        </aside>
+      </div>
+    </main>
+
+    <dialog id="notes-dialog" class="notes-dialog">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">BEFORE DEPARTURE</p><h2>出发前，再确认一次。</h2></div>
+        <button id="close-notes" class="icon-button" type="button" aria-label="关闭行前须知">
+          <svg><use href="#icon-close"></use></svg>
+        </button>
+      </div>
+      <div class="notes-list">
+        <article><span>01</span><div><h3>班次与票价</h3><p>航班采用截图中的东航 MU575 / MU730，含税参考价 ¥2,793。铁路班次、票价及景区开放时间可能调整，购票前请查看官方信息。</p></div></article>
+        <article><span>02</span><div><h3>秩父的季节</h3><p>1 月适合看武藏丘、武甲山与长瀞溪谷的冬景。羊山公园芝樱通常在 4 月中旬至 5 月初开放，本次不作为花期景观安排。</p></div></article>
+        <article><span>03</span><div><h3>大阪医科药科大学</h3><p>高槻校区历史资料馆公开信息为工作日 09:30–16:00、免费、周末及假日闭馆。建议提前联系校方确认参观。这里是医学史与 Vories 建筑参观点，《白色巨塔》常见原型考证另涉及大阪大学医院旧址。</p></div></article>
+        <article><span>04</span><div><h3>下北泽巡礼礼仪</h3><p>避免周末拥挤时段，不阻塞通道，不影响居民与演出场地运营。SHELTER 内外拍摄请先遵循现场要求。</p></div></article>
+      </div>
+      <div class="official-links">
+        <a href="https://www.gotokyo.org/en/spot/110/index.html" target="_blank" rel="noreferrer">下北泽官方指南<svg><use href="#icon-arrow-up-right"></use></svg></a>
+        <a href="https://www.seiburailway.jp/en/railway/limitedexpress/" target="_blank" rel="noreferrer">西武铁道特急<svg><use href="#icon-arrow-up-right"></use></svg></a>
+        <a href="https://www.omp.ac.jp/trad/" target="_blank" rel="noreferrer">大学历史资料馆<svg><use href="#icon-arrow-up-right"></use></svg></a>
+        <a href="https://www.mino-park.jp/about/187/" target="_blank" rel="noreferrer">箕面公园步道<svg><use href="#icon-arrow-up-right"></use></svg></a>
+      </div>
+    </dialog>
+
+    <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.16.0/dist/maplibre-gl.min.js"></script>
+    <script src="./data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
