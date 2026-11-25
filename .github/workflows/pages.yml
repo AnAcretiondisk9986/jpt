@@ -29,4 +29,17 @@ jobs:
       - name: Allow artifact metadata to settle
         run: sleep 10
       - id: deployment
+        continue-on-error: true
         uses: actions/deploy-pages@v4
+      - name: Retry Pages deployment
+        id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+      - name: Retry Pages deployment again
+        id: deployment_retry_again
+        if: steps.deployment.outcome == 'failure' && steps.deployment_retry.outcome == 'failure'
+        uses: actions/deploy-pages@v4
+      - name: Fail if Pages deployment failed
+        if: steps.deployment.outcome == 'failure' && steps.deployment_retry.outcome == 'failure' && steps.deployment_retry_again.outcome == 'failure'
+        run: exit 1
