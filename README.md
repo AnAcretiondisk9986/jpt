@@ -25,9 +25,11 @@ python -m http.server 4173
 - `app.js`：MapLibre 地图、逐日筛选与详情交互
 - `assets/`：地图引擎、区域瓦片、标注字形和本地字体
 
-地图使用 [MapLibre GL JS](https://maplibre.org/) 和 [OpenFreeMap](https://openfreemap.org/) 的 Positron 矢量样式，底图数据来自 OpenStreetMap。东京、秩父、镰仓、京都、大阪及总览范围的常用瓦片随仓库提供，区域外或更高细节在联网时加载。彩色线路为行程顺序示意，不是实时导航或精确轨道。
+地图使用 [MapLibre GL JS](https://maplibre.org/) 和 [OpenFreeMap](https://openfreemap.org/) 的 Positron 矢量样式，底图数据来自 OpenStreetMap。正常使用时在线瓦片优先，在线连接失败后整图切换至随仓库托管的本地瓦片。东京、秩父、镰仓、京都、大阪及总览范围的常用瓦片随仓库提供。彩色线路为行程顺序示意，不是实时导航或精确轨道。
 
-鼠标在地图上滚动滚轮即可缩放，不会带动页面滚动。触屏支持拖动与双指缩放。英文采用用户提供的 Anthropic Serif Italic，日文采用 BIZ UDPMincho，中文正文采用 Noto Sans SC Black。
+首页为全屏印象页，点击任意空白区域进入固定视口尺寸的行程工作区。日期栏与手帖采用固定逻辑尺寸，不随屏幕比例放大。手机禁止网页整体双指缩放，地图保留双指缩放与拖动。
+
+鼠标在地图上滚动滚轮即可缩放，不会带动页面滚动。点击标记或行程卡片会在对应日期的手帖中展开该地点，页面保持当前位置。英文采用用户提供的 Anthropic Serif Italic，日文采用 BIZ UDPMincho，中文正文采用 Noto Sans SC Black。
 
 ## 更新本地资源
 

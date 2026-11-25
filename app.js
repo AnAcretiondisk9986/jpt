@@ -15,6 +15,8 @@ let selectedDay = "all";
 let map;
 let mapReady = false;
 let activePopup;
+let appEntered = false;
+let mapTileMode = "online";
 const markers = [];
 
 const modeIcons = { rail: "train", walk: "walk", flight: "plane", bus: "bus" };
@@ -77,7 +79,7 @@ function renderStops(day) {
   return day.stops.map((stop, index) => `
     <article class="stop" style="--day-color:${day.color}">
       <span class="stop-marker">${index + 1}</span>
-      <button class="stop-card" data-stop-day="${day.id}" data-stop-index="${index}" type="button">
+      <button class="stop-card" id="stop-${day.id}-${index}" data-stop-day="${day.id}" data-stop-index="${index}" type="button" aria-pressed="false">
         <div class="stop-heading">
           <h3 class="stop-name">${escapeHtml(stop.jp)}</h3>
           <span class="stop-time">${escapeHtml(stop.time)}</span>
@@ -153,6 +155,8 @@ function setMapText(dayId) {
 
 function selectDay(dayId, fit = true) {
   selectedDay = dayId === "all" ? "all" : Number(dayId);
+  if (activePopup) activePopup.remove();
+  activePopup = null;
   document.querySelectorAll("[data-day]").forEach((button) => {
     const isActive = button.dataset.day === String(selectedDay);
     button.classList.toggle("is-active", isActive);
@@ -165,7 +169,7 @@ function selectDay(dayId, fit = true) {
     navigation.scrollTo({ left: selectedTab.offsetLeft - navigation.clientWidth + selectedTab.clientWidth, behavior: "instant" });
   }
   itineraryContent.innerHTML = day ? renderDay(day) : renderOverview();
-  itineraryContent.scrollTop = 0;
+  itineraryContent.scrollTo({ top: 0, behavior: "instant" });
   setMapText(selectedDay);
   if (mapReady) {
     updateMapVisibility();
@@ -202,25 +206,43 @@ function updateMapVisibility() {
   });
 }
 
-function showStop(dayId, stopIndex, flyToStop = true) {
+function showStop(dayId, stopIndex, flyToStop = true, scrollToCard = false) {
   const day = tripDays.find((item) => item.id === Number(dayId));
   const stop = day.stops[stopIndex];
   markers.forEach(({ element, dayId: markerDay, stopIndex: markerIndex }) => {
     element.classList.toggle("is-active", markerDay === day.id && markerIndex === stopIndex);
   });
-  if (activePopup) activePopup.remove();
-  activePopup = new maplibregl.Popup({ offset: 22, closeButton: true })
-    .setLngLat(stop.coords)
-    .setHTML(`
-      <div style="--popup-color:${day.color}">
-        <span class="popup-kicker">DAY ${day.id} · ${escapeHtml(stop.time)} · ${escapeHtml(stop.category)}</span>
-        <h3 class="popup-title">${escapeHtml(stop.jp)}</h3>
-        <p class="popup-jp" lang="zh-CN">${escapeHtml(stop.name)}</p>
-        <p class="popup-description" lang="zh-CN">${escapeHtml(stop.description)}</p>
-      </div>
-    `)
-    .addTo(map);
-  if (flyToStop) map.flyTo({ center: stop.coords, zoom: Math.max(map.getZoom(), 12.5), duration: 900, essential: false });
+  if (mapReady) {
+    if (activePopup) activePopup.remove();
+    activePopup = new maplibregl.Popup({ offset: 22, closeButton: true })
+      .setLngLat(stop.coords)
+      .setHTML(`
+        <div style="--popup-color:${day.color}">
+          <span class="popup-kicker">DAY ${day.id} · ${escapeHtml(stop.time)} · ${escapeHtml(stop.category)}</span>
+          <h3 class="popup-title">${escapeHtml(stop.jp)}</h3>
+          <p class="popup-jp" lang="zh-CN">${escapeHtml(stop.name)}</p>
+          <p class="popup-description" lang="zh-CN">${escapeHtml(stop.description)}</p>
+        </div>
+      `)
+      .addTo(map);
+    if (flyToStop) map.flyTo({ center: stop.coords, zoom: Math.max(map.getZoom(), 12.5), duration: 900, essential: false });
+  }
+  document.querySelectorAll(".stop-card").forEach((card) => {
+    const active = Number(card.dataset.stopDay) === day.id && Number(card.dataset.stopIndex) === stopIndex;
+    card.classList.toggle("is-selected", active);
+    card.setAttribute("aria-pressed", String(active));
+  });
+  if (scrollToCard) {
+    const card = document.querySelector(`#stop-${day.id}-${stopIndex}`);
+    const cardTop = card.getBoundingClientRect().top - itineraryContent.getBoundingClientRect().top + itineraryContent.scrollTop;
+    const target = cardTop - itineraryContent.clientHeight * .2;
+    itineraryContent.scrollTo({ top: Math.max(0, target), behavior: "instant" });
+  }
+}
+
+function revealStop(dayId, stopIndex) {
+  if (selectedDay !== dayId) selectDay(dayId, false);
+  showStop(dayId, stopIndex, false, true);
 }
 
 function routeFeature(day) {
@@ -232,19 +254,12 @@ function routeFeature(day) {
 }
 
 async function initializeMap() {
-  const baseStyle = new URL("./assets/map/positron.json", document.baseURI).href;
   const localTiles = `${new URL("./assets/map/tiles/", document.baseURI).href}{z}/{x}/{y}.pbf`;
-  const response = await fetch(baseStyle);
-  if (!response.ok) throw new Error(`Map style request failed: ${response.status}`);
-  const mapStyle = await response.json();
-  const tileMetadata = await fetch("https://tiles.openfreemap.org/planet", { signal: AbortSignal.timeout(4000) })
-    .then((result) => result.ok ? result.json() : null)
-    .catch(() => null);
-  const remoteTiles = tileMetadata?.tiles?.[0]
-    || "https://tiles.openfreemap.org/planet/20261122_124456_pt/{z}/{x}/{y}.pbf";
-  mapStyle.sources.openmaptiles.tiles = tileMetadata?.tiles?.length
-    ? [localTiles, ...tileMetadata.tiles]
-    : [localTiles, remoteTiles];
+  const styleResponse = await fetch(new URL("./assets/map/positron.json", document.baseURI));
+  if (!styleResponse.ok) throw new Error(`Local map style request failed: ${styleResponse.status}`);
+  const mapStyle = await styleResponse.json();
+  const remoteTiles = "https://tiles.openfreemap.org/planet/20261122_124456_pt/{z}/{x}/{y}.pbf";
+  mapStyle.sources.openmaptiles.tiles = [remoteTiles];
   mapStyle.sources.openmaptiles.minzoom = 0;
   mapStyle.sprite = new URL("./assets/map/sprites/ofm", document.baseURI).href;
   mapStyle.glyphs = `${new URL("./assets/map/fonts/", document.baseURI).href}{fontstack}/{range}.pbf`;
@@ -265,19 +280,27 @@ async function initializeMap() {
     dragRotate: false,
     touchPitch: false
   });
+  const resizeMap = () => {
+    if (mapReady && appEntered) map.resize();
+  };
+  new ResizeObserver(resizeMap).observe(document.querySelector("#journey-app"));
+  window.addEventListener("resize", resizeMap);
   map.touchZoomRotate.disableRotation();
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
   map.addControl(new maplibregl.ScaleControl({ maxWidth: 90, unit: "metric" }), "bottom-right");
 
-  const mapSection = document.querySelector(".map-section");
-  const mapCanvas = map.getCanvas();
-  mapSection.addEventListener("wheel", (event) => {
-    if (event.target.closest(".maplibregl-ctrl, .map-topbar, .map-bottom-card")) return;
-    event.preventDefault();
-  }, { passive: false });
-  mapCanvas.setAttribute("tabindex", "0");
+  function activateLocalTiles() {
+    if (mapTileMode === "local") return;
+    mapTileMode = "local";
+    const fallbackStyle = map.getStyle();
+    fallbackStyle.sources.openmaptiles.tiles = [localTiles];
+    map.setStyle(fallbackStyle, { diff: true });
+    document.querySelector("#map-source-label").textContent = "LOCAL MAP";
+    document.querySelector("#map-source-label").title = "在线地图连接失败，已使用随网页托管的本地地图。";
+  }
 
-  map.on("load", () => {
+  function addTripLayers() {
+    if (mapReady) return;
     tripDays.forEach((day) => {
       map.addSource(`route-${day.id}`, { type: "geojson", data: routeFeature(day) });
       map.addLayer({
@@ -298,6 +321,10 @@ async function initializeMap() {
 
     tripDays.forEach((day) => {
       day.stops.forEach((stop, stopIndex) => {
+        const anchor = document.createElement("div");
+        anchor.className = "trip-marker-anchor";
+        anchor.removeAttribute("role");
+        anchor.removeAttribute("aria-label");
         const element = document.createElement("button");
         element.type = "button";
         element.className = "trip-marker";
@@ -305,9 +332,12 @@ async function initializeMap() {
         element.textContent = stopIndex === 0 ? String(day.id) : `${day.id}.${stopIndex + 1}`;
         element.setAttribute("aria-label", `${day.id}日目 ${stop.jp}`);
         element.title = stop.name;
-        element.addEventListener("click", () => showStop(day.id, stopIndex));
-        const offset = selectedDay === "all" && day.id === 5 && stopIndex === 0 ? [18, -18] : [0, 0];
-        const marker = new maplibregl.Marker({ element, offset }).setLngLat(stop.coords).addTo(map);
+        element.addEventListener("click", (event) => {
+          event.stopPropagation();
+          revealStop(day.id, stopIndex);
+        });
+        anchor.appendChild(element);
+        const marker = new maplibregl.Marker({ element: anchor, anchor: "center" }).setLngLat(stop.coords).addTo(map);
         markers.push({ marker, element, dayId: day.id, stopIndex });
       });
     });
@@ -317,13 +347,22 @@ async function initializeMap() {
     document.querySelector("#map-loading").classList.add("is-hidden");
     updateMapVisibility();
     fitMap(selectedDay);
-  });
+  }
+
+  const mapSection = document.querySelector(".map-section");
+  const mapCanvas = map.getCanvas();
+  mapSection.addEventListener("wheel", (event) => {
+    if (event.target.closest(".maplibregl-ctrl, .map-topbar, .map-bottom-card")) return;
+    event.preventDefault();
+  }, { passive: false });
+  mapCanvas.setAttribute("tabindex", "0");
+
+  map.on("load", addTripLayers);
+  map.on("style.load", addTripLayers);
 
   map.on("error", (event) => {
-    if (mapReady) return;
-    console.error("Map loading error", event.error);
-    const loading = document.querySelector("#map-loading");
-    loading.innerHTML = "<strong>地図を読み込めませんでした</strong><span>通信状態を確認し、ページを再読込みしてください</span>";
+    console.warn("Map resource fallback", event.error);
+    if (mapTileMode === "online") activateLocalTiles();
   });
 }
 
@@ -334,10 +373,59 @@ document.addEventListener("click", (event) => {
     return;
   }
   const overviewDay = event.target.closest("[data-overview-day]");
-  if (overviewDay) selectDay(overviewDay.dataset.overviewDay);
+  if (overviewDay) {
+    selectDay(overviewDay.dataset.overviewDay);
+    return;
+  }
   const stopButton = event.target.closest("[data-stop-day]");
-  if (stopButton && mapReady) showStop(Number(stopButton.dataset.stopDay), Number(stopButton.dataset.stopIndex));
+  if (stopButton) revealStop(Number(stopButton.dataset.stopDay), Number(stopButton.dataset.stopIndex));
 });
+
+function enterJourney() {
+  if (appEntered) return;
+  appEntered = true;
+  document.querySelector("#welcome").hidden = true;
+  document.querySelector("#journey-app").hidden = false;
+  document.body.classList.add("journey-open");
+  history.replaceState(null, "", `${location.pathname}${location.search}#journey`);
+  if (mapReady) {
+    map.resize();
+    fitMap(selectedDay);
+  } else if (!map) {
+    map = true;
+    initializeMap().catch(showMapError);
+  }
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+function showWelcome() {
+  appEntered = false;
+  document.body.classList.remove("journey-open");
+  document.querySelector("#journey-app").hidden = true;
+  document.querySelector("#welcome").hidden = false;
+  history.replaceState(null, "", `${location.pathname}${location.search}`);
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+document.querySelector("#welcome").addEventListener("click", (event) => {
+  if (!event.target.closest("a")) enterJourney();
+});
+document.querySelector("#welcome").addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    enterJourney();
+  }
+});
+document.querySelector(".brand").addEventListener("click", (event) => {
+  event.preventDefault();
+  showWelcome();
+});
+document.addEventListener("gesturestart", (event) => {
+  if (!event.target.closest("#map")) event.preventDefault();
+}, { passive: false });
+document.addEventListener("touchmove", (event) => {
+  if (event.touches.length > 1 && !event.target.closest("#map")) event.preventDefault();
+}, { passive: false });
 
 document.querySelector("#fit-route").addEventListener("click", () => fitMap(selectedDay));
 mapFocusButton.addEventListener("click", () => {
@@ -365,7 +453,10 @@ document.addEventListener("keydown", (event) => {
 
 renderDayTabs();
 selectDay("all", false);
-initializeMap().catch((error) => {
+if (location.hash === "#journey") enterJourney();
+
+function showMapError(error) {
   console.error("Map initialization failed", error);
+  map = null;
   document.querySelector("#map-loading").innerHTML = "<strong>地図を読み込めませんでした</strong><span>通信状態を確認し、ページを再読込みしてください</span>";
-});
+}

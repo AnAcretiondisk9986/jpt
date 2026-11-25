@@ -2,7 +2,7 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#191a17" />
     <meta name="description" content="冬、東へ。2027年の日本8日間。東京、秩父、鎌倉、京都、大阪を巡る旅の記録。" />
     <title>冬、東へ。｜JPT 2027</title>
@@ -10,8 +10,9 @@
     <link href="./assets/maplibre-gl.css" rel="stylesheet" />
     <link rel="preload" href="./assets/fonts/anthropic-serif-italic.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="./assets/fonts/biz-udpmincho-700.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="stylesheet" href="./styles.css" />
-    <link rel="stylesheet" href="./editorial.css" />
+    <link rel="stylesheet" href="./styles.css?v=20261125b" />
+    <link rel="stylesheet" href="./editorial.css?v=20261125b" />
+    <link rel="stylesheet" href="./experience.css?v=20261125b" />
   </head>
   <body>
     <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -39,7 +40,7 @@
     </header>
 
     <main>
-      <section class="poster-hero" aria-labelledby="trip-title">
+      <section class="poster-hero" id="welcome" aria-labelledby="trip-title" tabindex="0" aria-label="旅程を開く">
         <div class="hero-sun" aria-hidden="true"></div>
         <div class="hero-lines" aria-hidden="true"></div>
         <div class="hero-coordinate">35°41′N — 139°41′E<br /><span>START FROM TOKYO</span></div>
@@ -57,11 +58,12 @@
         <div class="hero-bottom">
           <p lang="zh-CN" class="reading-copy">穿过城市的灯，驶入山野的冬。</p>
           <div class="hero-city-list"><span>東京</span><i></i><span>秩父</span><i></i><span>鎌倉</span><i></i><span>京都</span><i></i><span>大阪</span></div>
-          <a class="explore-link" href="#journey"><span>旅を見る</span><svg><use href="#icon-arrow"></use></svg></a>
+          <button class="explore-link" type="button" aria-label="全画面の旅程を開く"><span>旅を見る</span><svg><use href="#icon-arrow"></use></svg></button>
         </div>
         <div class="hero-outline" aria-hidden="true">JAPAN</div>
       </section>
 
+      <div class="journey-app" id="journey-app" hidden>
       <section class="trip-facts" aria-label="旅程の概要">
         <div><span>出発地 / FROM</span><strong>中国浙江省 · 義烏</strong></div>
         <div><span>日程 / WHEN</span><strong>2027.01.19 — 01.26</strong></div>
@@ -79,7 +81,7 @@
         <section class="map-section" aria-label="旅のベクトル地図">
           <div id="map" role="application" aria-label="日本旅行インタラクティブ地図"></div>
           <div class="map-topbar">
-            <div class="map-label"><span class="live-dot"></span><span id="map-label">8日間のルート</span><small id="map-source-label">LOCAL MAP</small></div>
+            <div class="map-label"><span class="live-dot"></span><span id="map-label">8日間のルート</span><small id="map-source-label">LIVE MAP</small></div>
             <div class="map-tools">
               <button id="fit-route" type="button" title="全ルートを表示" aria-label="全ルートを表示"><svg><use href="#icon-expand"></use></svg></button>
               <button id="map-focus" type="button" title="地図に集中" aria-label="地図に集中" aria-pressed="false"><span>全画面</span></button>
@@ -93,7 +95,7 @@
             <button id="next-day" type="button" aria-label="翌日を見る" title="翌日を見る"><svg><use href="#icon-arrow"></use></svg></button>
           </div>
           <p class="map-disclaimer">ルートは訪問順のイメージ / 移動は当日の案内をご確認ください</p>
-          <p class="map-gesture-hint" id="map-gesture-hint">ホイールで拡大 · 2本指で地図を移動</p>
+          <p class="map-gesture-hint" id="map-gesture-hint">ホイールで拡大 · ドラッグで移動</p>
           <div class="map-japan-tag" aria-hidden="true"><span>日本</span><small>JPT / 2027</small></div>
         </section>
 
@@ -104,11 +106,12 @@
         </aside>
       </div>
 
-      <footer class="closing-section">
+      <footer class="closing-section" hidden>
         <p lang="ja">また、旅の途中で。</p>
         <div><span>TOKYO IN / OSAKA OUT</span><span>自然と街を、歩く。</span></div>
         <strong aria-hidden="true">旅</strong>
       </footer>
+      </div>
     </main>
 
     <dialog id="notes-dialog" class="notes-dialog">
@@ -128,7 +131,7 @@
     </dialog>
 
     <script src="./assets/maplibre-gl.min.js"></script>
-    <script src="./data.js"></script>
-    <script src="./app.js"></script>
+    <script src="./data.js?v=20261125b"></script>
+    <script src="./app.js?v=20261125b"></script>
   </body>
 </html>
