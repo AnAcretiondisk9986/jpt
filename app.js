@@ -6,6 +6,8 @@ const mapLabel = document.querySelector("#map-label");
 const mapStamp = document.querySelector("#map-day-stamp");
 const mapTitle = document.querySelector("#map-day-title");
 const mapSubtitle = document.querySelector("#map-day-subtitle");
+const mapWatermark = document.querySelector("#map-watermark");
+const mapFocusButton = document.querySelector("#map-focus");
 const notesDialog = document.querySelector("#notes-dialog");
 
 let selectedDay = "all";
@@ -113,18 +115,20 @@ function renderOverview() {
 
 function setMapText(dayId) {
   const day = tripDays.find((item) => item.id === Number(dayId));
-  document.documentElement.style.setProperty("--accent", day ? day.color : "#d9694f");
+  document.documentElement.style.setProperty("--accent", day ? day.color : "#ed3b23");
   if (!day) {
     mapLabel.textContent = "8 日路线总览";
     mapStamp.textContent = "ALL";
     mapTitle.textContent = "东京 → 大阪";
     mapSubtitle.textContent = "5 座城市周边 · 自然、街巷与圣地巡礼";
+    mapWatermark.textContent = "08";
     return;
   }
   mapLabel.textContent = `DAY ${String(day.id).padStart(2, "0")} · ${day.city}`;
   mapStamp.textContent = String(day.id).padStart(2, "0");
   mapTitle.textContent = day.shortTitle;
   mapSubtitle.textContent = day.transport;
+  mapWatermark.textContent = String(day.id).padStart(2, "0");
 }
 
 function selectDay(dayId, fit = true) {
@@ -135,7 +139,13 @@ function selectDay(dayId, fit = true) {
     button.setAttribute("aria-pressed", String(isActive));
   });
   const day = tripDays.find((item) => item.id === selectedDay);
+  const selectedTab = document.querySelector(`.day-tab[data-day="${selectedDay}"]`);
+  if (selectedTab && window.innerWidth <= 900) {
+    const navigation = document.querySelector(".day-navigation");
+    navigation.scrollTo({ left: selectedTab.offsetLeft - navigation.clientWidth + selectedTab.clientWidth, behavior: "smooth" });
+  }
   itineraryContent.innerHTML = day ? renderDay(day) : renderOverview();
+  itineraryContent.scrollTop = 0;
   setMapText(selectedDay);
   if (mapReady) {
     updateMapVisibility();
@@ -151,9 +161,11 @@ function fitMap(dayId) {
   const days = dayId === "all" ? tripDays : tripDays.filter((day) => day.id === Number(dayId));
   const coordinates = days.flatMap((day) => day.stops.map((stop) => stop.coords));
   const bounds = coordinates.reduce((box, coords) => box.extend(coords), new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
+  const mapWidth = document.querySelector(".map-section").clientWidth;
+  const horizontalPadding = Math.min(75, mapWidth * .12);
   map.fitBounds(bounds, {
-    padding: { top: 90, right: 75, bottom: 120, left: 75 },
-    maxZoom: dayId === "all" ? 8.1 : 12.8,
+    padding: { top: 90, right: horizontalPadding, bottom: 120, left: horizontalPadding },
+    maxZoom: dayId === "all" ? (mapWidth < 500 ? 4.3 : 7.8) : 12.8,
     duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1100
   });
 }
@@ -202,7 +214,7 @@ function routeFeature(day) {
 function initializeMap() {
   map = new maplibregl.Map({
     container: "map",
-    style: "https://tiles.openfreemap.org/styles/liberty",
+    style: "https://tiles.openfreemap.org/styles/positron",
     center: [137.5, 35.7],
     zoom: 5,
     minZoom: 4,
@@ -221,14 +233,14 @@ function initializeMap() {
         type: "line",
         source: `route-${day.id}`,
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": "#fffefa", "line-width": 6, "line-opacity": .8 }
+        paint: { "line-color": "#f8f7f1", "line-width": 7, "line-opacity": .9 }
       });
       map.addLayer({
         id: `route-${day.id}`,
         type: "line",
         source: `route-${day.id}`,
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": day.color, "line-width": 2.5, "line-opacity": .9 }
+        paint: { "line-color": day.color, "line-width": 3.5, "line-opacity": .95 }
       });
     });
 
@@ -276,6 +288,13 @@ document.addEventListener("click", (event) => {
 });
 
 document.querySelector("#fit-route").addEventListener("click", () => fitMap(selectedDay));
+mapFocusButton.addEventListener("click", () => {
+  const focusMode = document.body.classList.toggle("map-focus-mode");
+  mapFocusButton.querySelector("span").textContent = focusMode ? "退出" : "全屏";
+  mapFocusButton.setAttribute("aria-pressed", String(focusMode));
+  map.resize();
+  fitMap(selectedDay);
+});
 document.querySelector("#next-day").addEventListener("click", () => {
   const nextDay = selectedDay === "all" || selectedDay === tripDays.length ? 1 : selectedDay + 1;
   selectDay(nextDay);
@@ -287,6 +306,9 @@ notesDialog.addEventListener("click", (event) => {
     const rect = notesDialog.getBoundingClientRect();
     if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) notesDialog.close();
   }
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && document.body.classList.contains("map-focus-mode")) mapFocusButton.click();
 });
 
 renderDayTabs();

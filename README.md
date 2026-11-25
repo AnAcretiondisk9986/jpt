@@ -4,7 +4,7 @@
 
 ## 在线访问
 
-访问 `https://blog.acretiondisk.top/japan-winter-journey/`。
+访问 `https://blog.acretiondisk.top/jpt/`。
 
 ## 本地预览
 
