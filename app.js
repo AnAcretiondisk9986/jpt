@@ -231,16 +231,37 @@ function routeFeature(day) {
   };
 }
 
-function initializeMap() {
+async function initializeMap() {
+  const baseStyle = new URL("./assets/map/positron.json", document.baseURI).href;
+  const localTiles = `${new URL("./assets/map/tiles/", document.baseURI).href}{z}/{x}/{y}.pbf`;
+  const response = await fetch(baseStyle);
+  if (!response.ok) throw new Error(`Map style request failed: ${response.status}`);
+  const mapStyle = await response.json();
+  const tileMetadata = await fetch("https://tiles.openfreemap.org/planet", { signal: AbortSignal.timeout(4000) })
+    .then((result) => result.ok ? result.json() : null)
+    .catch(() => null);
+  const remoteTiles = tileMetadata?.tiles?.[0]
+    || "https://tiles.openfreemap.org/planet/20261122_124456_pt/{z}/{x}/{y}.pbf";
+  mapStyle.sources.openmaptiles.tiles = tileMetadata?.tiles?.length
+    ? [localTiles, ...tileMetadata.tiles]
+    : [localTiles, remoteTiles];
+  mapStyle.sources.openmaptiles.minzoom = 0;
+  mapStyle.sprite = new URL("./assets/map/sprites/ofm", document.baseURI).href;
+  mapStyle.glyphs = `${new URL("./assets/map/fonts/", document.baseURI).href}{fontstack}/{range}.pbf`;
+  mapStyle.sources = Object.fromEntries(Object.entries(mapStyle.sources)
+    .filter(([id]) => id === "openmaptiles"));
+  mapStyle.layers = mapStyle.layers.filter((layer) => layer.source !== "ne2_shaded");
+
   map = new maplibregl.Map({
     container: "map",
-    style: "https://tiles.openfreemap.org/styles/positron",
-    center: [137.5, 35.7],
+    style: mapStyle,
+    center: [136.2, 35.6],
     zoom: 5,
     minZoom: 4,
     maxZoom: 18,
     attributionControl: { compact: true },
-    cooperativeGestures: true,
+    cooperativeGestures: false,
+    scrollZoom: true,
     dragRotate: false,
     touchPitch: false
   });
@@ -250,21 +271,10 @@ function initializeMap() {
 
   const mapSection = document.querySelector(".map-section");
   const mapCanvas = map.getCanvas();
-  const gestureScreen = map.getContainer().querySelector(".maplibregl-cooperative-gesture-screen");
-  const showMapGesture = () => {
-    if (window.innerWidth <= 900 && gestureScreen) gestureScreen.style.display = "block";
-  };
   mapSection.addEventListener("wheel", (event) => {
     if (event.target.closest(".maplibregl-ctrl, .map-topbar, .map-bottom-card")) return;
-    if (!event.ctrlKey && !event.metaKey) event.preventDefault();
+    event.preventDefault();
   }, { passive: false });
-  mapSection.addEventListener("touchmove", (event) => {
-    if (!event.target.closest("#map") || event.touches.length > 1) return;
-    showMapGesture();
-  }, { passive: false });
-  mapSection.addEventListener("touchend", () => {
-    if (gestureScreen) gestureScreen.style.display = "";
-  }, { passive: true });
   mapCanvas.setAttribute("tabindex", "0");
 
   map.on("load", () => {
@@ -303,6 +313,7 @@ function initializeMap() {
     });
 
     mapReady = true;
+    window.dispatchEvent(new Event("jpt-map-ready"));
     document.querySelector("#map-loading").classList.add("is-hidden");
     updateMapVisibility();
     fitMap(selectedDay);
@@ -331,7 +342,7 @@ document.addEventListener("click", (event) => {
 document.querySelector("#fit-route").addEventListener("click", () => fitMap(selectedDay));
 mapFocusButton.addEventListener("click", () => {
   const focusMode = document.body.classList.toggle("map-focus-mode");
-  mapFocusButton.querySelector("span").textContent = focusMode ? "戻る" : "拡大";
+  mapFocusButton.querySelector("span").textContent = focusMode ? "戻る" : "全画面";
   mapFocusButton.setAttribute("aria-pressed", String(focusMode));
   map.resize();
   fitMap(selectedDay);
@@ -354,4 +365,7 @@ document.addEventListener("keydown", (event) => {
 
 renderDayTabs();
 selectDay("all", false);
-initializeMap();
+initializeMap().catch((error) => {
+  console.error("Map initialization failed", error);
+  document.querySelector("#map-loading").innerHTML = "<strong>地図を読み込めませんでした</strong><span>通信状態を確認し、ページを再読込みしてください</span>";
+});

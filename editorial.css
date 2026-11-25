@@ -1,0 +1,113 @@
+:root { --latin: "Anthropic Serif Italic", Georgia, serif; }
+
+.brand-edition, .header-season, .eyebrow, .hero-eyebrow, .hero-coordinate,
+.hero-stamp, .day-kicker, .trip-summary .eyebrow, .panel-heading small,
+.popup-kicker, .nav-caption, .hero-outline, .overview-button small,
+.panel-footer, .closing-section > div, .map-japan-tag small {
+  font-family: var(--latin);
+  font-style: italic;
+}
+
+.hero-stamp > span, .day-tab-number, .map-day-stamp, .trip-stat strong,
+.overview-day-number, .map-watermark, .trip-marker, .notes-list article > span {
+  font-family: var(--latin);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.poster-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -4;
+  background-image: radial-gradient(#191a1726 .55px, transparent .65px);
+  background-size: 5px 5px;
+  pointer-events: none;
+}
+
+.hero-orbit {
+  position: absolute;
+  z-index: -1;
+  width: clamp(270px, 26vw, 450px);
+  aspect-ratio: 1;
+  right: 14%;
+  top: 17%;
+  border: 1px solid #efeee69c;
+  border-radius: 50%;
+  transform: rotate(-22deg);
+}
+.hero-orbit::before, .hero-orbit::after { content: ""; position: absolute; border: 1px solid #efeee66e; border-radius: 50%; inset: 7%; }
+.hero-orbit::after { inset: 19%; border-style: dashed; }
+.hero-orbit span { position: absolute; left: -14px; top: 23%; display: grid; place-items: center; width: 34px; height: 34px; background: var(--paper); border: 1px solid var(--ink); font-family: var(--serif); font-size: 18px; transform: rotate(22deg); }
+.hero-orbit i { position: absolute; top: 50%; left: -20%; right: -20%; height: 1px; background: #efeee677; }
+.hero-orbit small { position: absolute; bottom: 13%; right: -5%; font-family: var(--serif); font-size: 10px; letter-spacing: 5px; writing-mode: vertical-rl; }
+.hero-route-note { position: absolute; right: 2%; bottom: 29%; display: flex; flex-direction: column; gap: 9px; padding: 14px 18px; border: 1px solid var(--ink); border-radius: 2px 16px 2px 16px; background: var(--paper); transform: rotate(3deg); }
+.hero-route-note span, .hero-route-note small { font-size: 8px; letter-spacing: 2px; }
+.hero-route-note strong { font-family: var(--serif); font-size: 16px; }
+.hero-route-note small { color: var(--red); }
+.hero-seal { position: absolute; right: 27%; top: 22%; display: grid; place-items: center; width: 54px; height: 70px; border: 2px solid var(--red); border-radius: 6px 2px 6px 2px; color: var(--red); font-family: var(--serif); font-size: 25px; font-weight: 900; line-height: 1.2; transform: rotate(-8deg); }
+.hero-seal small { font-size: 8px; letter-spacing: 1px; }
+.hero-flower { position: absolute; right: 5%; top: 44%; width: 80px; height: 80px; opacity: .68; }
+.hero-flower i { position: absolute; width: 25px; height: 45px; left: 28px; top: 0; border: 1px solid var(--paper); border-radius: 50% 50% 45% 45%; transform-origin: 50% 90%; }
+.hero-flower i:nth-child(2) { transform: rotate(72deg); }
+.hero-flower i:nth-child(3) { transform: rotate(144deg); }
+.hero-flower i:nth-child(4) { transform: rotate(216deg); }
+.hero-flower i:nth-child(5) { transform: rotate(288deg); }
+
+.trip-facts { border-radius: 3px 18px 3px 18px; overflow: hidden; }
+.day-navigation { border: 1px solid var(--ink); border-radius: 14px 3px 14px 3px; overflow: hidden; margin-bottom: 14px; }
+.workspace { padding-bottom: 24px; }
+.map-section { border: 1px solid var(--ink); border-radius: 18px 4px 18px 4px; }
+.map-label { border-radius: 8px 2px 8px 2px; }
+.map-label small { padding-left: 9px; border-left: 1px solid #efeee652; color: #d7dacd; font-family: var(--latin); font-size: 8px; letter-spacing: 1px; }
+.map-tools button { border-radius: 6px; }
+.maplibregl-ctrl-group { border-radius: 7px; }
+.map-bottom-card { border-radius: 3px 15px 3px 15px; }
+.itinerary-panel { margin-top: 0; border-radius: 4px 18px 4px 18px; overflow: hidden; }
+.transfer { border-radius: 2px 9px 2px 9px; }
+.trip-marker { border-radius: 7px 2px 7px 2px; font-size: 11px; }
+.maplibregl-popup-content { border-radius: 4px 15px 4px 15px; }
+.notes-dialog { border-radius: 5px 22px 5px 22px; }
+.map-japan-tag { position: absolute; right: 24px; bottom: 50px; display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--red); pointer-events: none; }
+.map-japan-tag span { padding: 9px 7px; border: 1px solid var(--red); border-radius: 2px 7px 2px 7px; font-family: var(--serif); font-size: 19px; writing-mode: vertical-rl; }
+.map-japan-tag small { font-size: 8px; }
+.map-focus-mode .map-section { border-radius: 0; }
+
+.day-tag, .trip-stats, .day-tab:first-child, .explore-link,
+.map-bottom-card button, .icon-button, .official-links a {
+  border-radius: 4px 10px 4px 10px;
+}
+.trip-stats { overflow: hidden; }
+.day-overview::after, .day-kicker, .overview-day-number, .closing-section > div,
+.hero-stamp, .hero-coordinate, .hero-outline, .map-watermark, .map-day-stamp,
+.hero-eyebrow, .trip-facts > div:nth-child(2) strong, .trip-facts > div:nth-child(3) strong,
+.brand strong, .trip-facts span {
+  font-family: var(--latin);
+  font-style: italic;
+}
+.day-overview::after, .overview-day-number { font-weight: 400; }
+.trip-facts > div:nth-child(2) strong, .trip-facts > div:nth-child(3) strong { font-weight: 400; }
+
+@media (min-width: 901px) {
+  .map-gesture-hint { display: block; left: 25px; top: auto; bottom: 35px; font-size: 7px; opacity: .75; }
+}
+
+@media (max-width: 900px) {
+  .hero-route-note { right: 2%; bottom: 30%; }
+  .hero-seal { right: 25%; top: 16%; }
+  .hero-orbit { right: 10%; }
+  .itinerary-panel { margin-top: 25px; }
+}
+
+@media (max-width: 600px) {
+  .hero-route-note { right: 2%; bottom: 29%; padding: 10px 12px; }
+  .hero-route-note strong { font-size: 11px; }
+  .hero-route-note span, .hero-route-note small { font-size: 6px; letter-spacing: 1px; }
+  .hero-seal { right: 20%; top: 15%; width: 35px; height: 47px; font-size: 18px; }
+  .hero-seal small { font-size: 6px; }
+  .hero-orbit { width: 230px; right: -3%; top: 26%; }
+  .hero-flower { width: 50px; height: 50px; right: 2%; top: 45%; }
+  .hero-flower i { width: 17px; height: 30px; left: 17px; }
+  .map-japan-tag { display: none; }
+  .itinerary-panel { margin-top: 20px; }
+}

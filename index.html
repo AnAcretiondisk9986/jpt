@@ -6,13 +6,12 @@
     <meta name="theme-color" content="#191a17" />
     <meta name="description" content="冬、東へ。2027年の日本8日間。東京、秩父、鎌倉、京都、大阪を巡る旅の記録。" />
     <title>冬、東へ。｜JPT 2027</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPMincho:wght@400;700;900&family=Noto+Sans+SC:wght@900&display=swap" rel="stylesheet" />
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin />
-    <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.16.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <link href="./assets/maplibre-gl.css" rel="stylesheet" />
+    <link rel="preload" href="./assets/fonts/anthropic-serif-italic.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="./assets/fonts/biz-udpmincho-700.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./editorial.css" />
   </head>
   <body>
     <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -45,12 +44,16 @@
         <div class="hero-lines" aria-hidden="true"></div>
         <div class="hero-coordinate">35°41′N — 139°41′E<br /><span>START FROM TOKYO</span></div>
         <div class="hero-vertical" lang="ja">冬の列車で、西へ。<small>二〇二七年一月</small></div>
+        <div class="hero-orbit" aria-hidden="true"><span>東</span><i></i><small>東へ、冬を旅する</small></div>
+        <div class="hero-flower" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="hero-route-note"><span>東京進 / 大阪出</span><strong>五つの街、八日間。</strong><small>自然・街並み・聖地</small></div>
         <div class="hero-copy">
           <p class="hero-eyebrow"><span>8 DAYS IN JAPAN</span><span>19 JAN — 26 JAN 2027</span></p>
-          <h1 id="trip-title" lang="zh-CN"><span>冬日，</span><span>向东<span class="hero-period">。</span></span></h1>
+          <h1 id="trip-title" lang="ja"><span>冬、</span><span>東へ<span class="hero-period">。</span></span></h1>
         <div class="hero-japanese" lang="ja">ふゆ、ひがしへ。</div>
         </div>
         <div class="hero-stamp" aria-label="8日間7泊"><span>08</span><small>DAYS<br />7 NIGHTS</small></div>
+        <div class="hero-seal" aria-hidden="true">旅<br /><small>二〇二七</small></div>
         <div class="hero-bottom">
           <p lang="zh-CN" class="reading-copy">穿过城市的灯，驶入山野的冬。</p>
           <div class="hero-city-list"><span>東京</span><i></i><span>秩父</span><i></i><span>鎌倉</span><i></i><span>京都</span><i></i><span>大阪</span></div>
@@ -76,10 +79,10 @@
         <section class="map-section" aria-label="旅のベクトル地図">
           <div id="map" role="application" aria-label="日本旅行インタラクティブ地図"></div>
           <div class="map-topbar">
-            <div class="map-label"><span class="live-dot"></span><span id="map-label">8日間のルート</span></div>
+            <div class="map-label"><span class="live-dot"></span><span id="map-label">8日間のルート</span><small id="map-source-label">LOCAL MAP</small></div>
             <div class="map-tools">
               <button id="fit-route" type="button" title="全ルートを表示" aria-label="全ルートを表示"><svg><use href="#icon-expand"></use></svg></button>
-              <button id="map-focus" type="button" title="地図に集中" aria-label="地図に集中" aria-pressed="false"><span>拡大</span></button>
+              <button id="map-focus" type="button" title="地図に集中" aria-label="地図に集中" aria-pressed="false"><span>全画面</span></button>
             </div>
           </div>
           <div class="map-loading" id="map-loading"><span class="loading-spinner"></span><span>地図を読み込んでいます</span></div>
@@ -90,7 +93,8 @@
             <button id="next-day" type="button" aria-label="翌日を見る" title="翌日を見る"><svg><use href="#icon-arrow"></use></svg></button>
           </div>
           <p class="map-disclaimer">ルートは訪問順のイメージ / 移動は当日の案内をご確認ください</p>
-          <p class="map-gesture-hint" id="map-gesture-hint">2本指で地図を移動 · ピンチで拡大</p>
+          <p class="map-gesture-hint" id="map-gesture-hint">ホイールで拡大 · 2本指で地図を移動</p>
+          <div class="map-japan-tag" aria-hidden="true"><span>日本</span><small>JPT / 2027</small></div>
         </section>
 
         <aside class="itinerary-panel" aria-label="日別の旅程詳細">
@@ -123,7 +127,7 @@
       </div>
     </dialog>
 
-    <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.16.0/dist/maplibre-gl.min.js"></script>
+    <script src="./assets/maplibre-gl.min.js"></script>
     <script src="./data.js"></script>
     <script src="./app.js"></script>
   </body>

@@ -1,0 +1,15 @@
+Vector map data: OpenStreetMap contributors
+https://www.openstreetmap.org/copyright
+
+Schema and style: OpenMapTiles, OpenFreeMap Positron style
+https://www.openmaptiles.org/
+https://openfreemap.org/
+
+The regional vector tiles in tiles/ were cached from
+https://tiles.openfreemap.org/planet on 2026-11-25. They cover the trip's
+primary regions at zoom levels 4-13. MapLibre GL JS, the style's glyphs and
+sprites are bundled with this site. Tiles outside the cached regions and
+higher-detail tiles are fetched from OpenFreeMap when online.
+
+BIZ UDPMincho and Noto Sans SC are distributed under the SIL Open Font
+License. Their license texts are included in assets/fonts/.

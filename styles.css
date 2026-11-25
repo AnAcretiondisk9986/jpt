@@ -10,11 +10,44 @@
   --sans: "BIZ UDPMincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
   --serif: "BIZ UDPMincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
   --reading: "Noto Sans SC", sans-serif;
+  --latin: "Anthropic Serif Italic", Georgia, serif;
   color: var(--ink);
   background: var(--paper);
   font-family: var(--serif);
   font-synthesis: none;
   scroll-behavior: auto;
+}
+
+@font-face {
+  font-family: "Anthropic Serif Italic";
+  src: url("./assets/fonts/anthropic-serif-italic.woff2") format("woff2"), url("./assets/fonts/anthropic-serif-italic.ttf") format("truetype");
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "BIZ UDPMincho";
+  src: url("./assets/fonts/biz-udpmincho-400.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "BIZ UDPMincho";
+  src: url("./assets/fonts/biz-udpmincho-700.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 600 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noto Sans SC";
+  src: url("./assets/fonts/noto-sans-sc-900.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
 }
 
 * { box-sizing: border-box; }
