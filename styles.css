@@ -231,14 +231,14 @@ h1 > span:last-child { margin-left: .42em; }
 .trip-marker { display: grid; place-items: center; width: 31px; height: 31px; border: 2px solid var(--paper-light); border-radius: 0; background: var(--marker-color); box-shadow: 3px 3px 0 #191a174a; color: #fff; font-family: var(--sans); font-size: 9px; font-weight: 700; cursor: pointer; transform: rotate(-4deg); transition: transform .15s; }
 .trip-marker:hover { z-index: 2; transform: rotate(4deg) scale(1.16); }
 .trip-marker.is-active { z-index: 3; outline: 3px solid var(--marker-color); outline-offset: 4px; transform: rotate(4deg) scale(1.16); }
-.maplibregl-popup { max-width: 300px !important; z-index: 5; }
-.maplibregl-popup-content { padding: 20px; border: 1px solid var(--ink); border-radius: 0; box-shadow: 7px 7px 0 var(--popup-color); background: var(--paper-light); color: var(--ink); }
+.maplibregl-popup { width: 260px; max-width: 260px !important; z-index: 5; }
+.maplibregl-popup-content { box-sizing: border-box; width: 260px; padding: 15px 16px 16px; border: 1px solid var(--ink); border-radius: 0; box-shadow: 6px 6px 0 var(--popup-color); background: var(--paper-light); color: var(--ink); }
 .maplibregl-popup-close-button { padding: 4px 8px; font-size: 20px; }
 .maplibregl-popup-tip { border-top-color: var(--ink) !important; }
 .popup-kicker { color: var(--popup-color); font-size: 8px; font-weight: 700; }
-.popup-title { margin: 8px 0 5px; font-family: var(--serif); font-size: 20px; }
+.popup-title { margin: 7px 0 4px; font-family: var(--serif); font-size: 17px; line-height: 1.35; }
 .popup-jp { margin: 0; color: var(--muted); font-size: 9px; }
-.popup-description { margin: 12px 0 0; color: #64695f; font-size: 11px; line-height: 1.8; }
+.popup-description { margin: 9px 0 0; color: #64695f; font-size: 10px; line-height: 1.7; }
 
 .closing-section { position: relative; min-height: 250px; padding: 55px 0; display: flex; align-items: center; justify-content: space-between; gap: 30px; overflow: hidden; }
 .closing-section > p { position: relative; z-index: 1; margin: 0; font-family: var(--serif); font-size: clamp(24px, 3vw, 43px); font-weight: 700; }

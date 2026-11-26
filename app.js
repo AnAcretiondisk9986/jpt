@@ -178,11 +178,6 @@ function markerPopupOffset(scale) {
   return Math.ceil(39 * scale) + 4;
 }
 
-function syncPopupScale(scale) {
-  const popupScale = activePopup?.getElement()?.querySelector(".popup-scale");
-  if (popupScale) popupScale.style.transform = `scale(${scale})`;
-}
-
 function showStop(dayId, stopIndex, flyToStop = true, scrollToCard = false) {
   const day = tripDays.find((item) => item.id === Number(dayId));
   const stop = day.stops[stopIndex];
@@ -202,7 +197,6 @@ function showStop(dayId, stopIndex, flyToStop = true, scrollToCard = false) {
         </div>
       `)
       .addTo(map);
-    syncPopupScale(markerScaleAtZoom());
     if (flyToStop) map.flyTo({ center: stop.coords, zoom: Math.max(map.getZoom(), 12.5), duration: 900, essential: false });
   }
   document.querySelectorAll(".stop-card").forEach((card) => {
@@ -220,7 +214,7 @@ function showStop(dayId, stopIndex, flyToStop = true, scrollToCard = false) {
 
 function revealStop(dayId, stopIndex) {
   if (selectedDay !== dayId) selectDay(dayId, false);
-  showStop(dayId, stopIndex, false, true);
+  showStop(dayId, stopIndex, true, true);
 }
 
 function routeFeature(day) {
@@ -264,7 +258,6 @@ async function initializeMap() {
   new ResizeObserver(resizeMap).observe(document.querySelector("#journey-app"));
   window.addEventListener("resize", resizeMap);
   map.touchZoomRotate.disableRotation();
-  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-left");
   map.addControl(new maplibregl.ScaleControl({ maxWidth: 90, unit: "metric" }), "bottom-right");
   const mapContainer = map.getContainer();
   const resizeMarkers = () => {
@@ -272,7 +265,6 @@ async function initializeMap() {
     mapContainer.style.setProperty("--trip-marker-scale", scale);
     if (activePopup?.isOpen()) {
       activePopup.setOffset(markerPopupOffset(scale));
-      syncPopupScale(scale);
     }
   };
   resizeMarkers();
