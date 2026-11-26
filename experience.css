@@ -56,7 +56,16 @@ body.journey-open { overflow: hidden; }
   .maplibregl-canvas { touch-action: none; }
 }
 
-.trip-marker-anchor { width: 33px; height: 37px; pointer-events: none; }
+.trip-marker-anchor { width: 0; height: 0; pointer-events: none; }
+.trip-marker-pin {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 33px;
+  height: 36px;
+  transform: translateX(-50%) scale(var(--trip-marker-scale, 1));
+  transform-origin: center bottom;
+}
 .trip-marker {
   position: absolute;
   left: 0;
@@ -67,13 +76,14 @@ body.journey-open { overflow: hidden; }
   border-radius: 9px 9px 9px 2px;
   box-shadow: 0 4px 12px #191a1733;
 }
-.trip-marker-anchor::after {
+.trip-marker-pin::after {
   content: "";
   position: absolute;
-  left: 14px;
-  bottom: 0;
+  left: 50%;
+  top: 100%;
   width: 5px;
   height: 5px;
+  transform: translate(-50%, -50%);
   border: 1px solid var(--paper-light);
   border-radius: 50%;
   background: var(--marker-color);
@@ -83,6 +93,30 @@ body.journey-open { overflow: hidden; }
 .stop-card { border-radius: 4px 14px 4px 14px; padding: 10px 10px 17px; margin: -10px -10px 0; scroll-margin-top: 18px; }
 .stop-card.is-selected { background: #e9e9df; box-shadow: inset 3px 0 0 var(--day-color); }
 .stop-card.is-selected .stop-name { color: var(--day-color); }
+
+.journey-app { position: relative; height: calc(100svh - 76px); min-height: 0; overflow: hidden; background: #d7d8d0; }
+.workspace { position: absolute; inset: 0; display: block; width: 100%; height: 100%; min-height: 0; padding: 0; border: 0; }
+.map-section { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 0; }
+.map-topbar { top: auto; right: auto; bottom: 26px; left: 24px; z-index: 4; gap: 10px; pointer-events: auto; }
+.map-label { border-radius: 18px; padding: 8px 12px; font-size: 9px; pointer-events: auto; }
+.map-label small { color: #d7dacd; }
+.map-tools { pointer-events: auto; }
+.map-tools button { border-radius: 50%; }
+.maplibregl-ctrl-bottom-left { bottom: 76px; left: 20px; }
+.maplibregl-ctrl-bottom-right { bottom: 68px; right: 20px; }
+.day-navigation { position: absolute; z-index: 6; top: 24px; left: 50%; width: min(1020px, calc(100% - 48px)); height: 60px; margin: 0; border: 0; border-radius: 18px; background: #f8f7f1e8; box-shadow: 0 8px 30px #191a1730; backdrop-filter: blur(14px); transform: translateX(-50%); }
+.overview-button { flex-basis: 95px; border-right: 1px solid var(--line); border-radius: 14px; background: #191a17; color: var(--paper-light); }
+.day-tab { height: 60px; }
+.day-tab-number { font-size: 29px; }
+.itinerary-overlay { position: absolute; z-index: 7; right: 24px; bottom: 24px; width: min(390px, calc(100% - 48px)); display: flex; flex-direction: column; align-items: stretch; gap: 10px; pointer-events: none; }
+.itinerary-toggle { align-self: flex-end; display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 8px 13px; border: 1px solid var(--ink); border-radius: 18px; background: #f8f7f1e8; box-shadow: 0 8px 30px #191a1730; backdrop-filter: blur(14px); font-size: 10px; pointer-events: auto; }
+.itinerary-toggle > svg:first-child { width: 15px; height: 15px; }
+.itinerary-chevron { width: 13px; height: 13px; transition: transform .2s; }
+.itinerary-toggle[aria-expanded="true"] .itinerary-chevron { transform: rotate(90deg); }
+.itinerary-panel { width: 100%; max-height: min(68svh, 650px); margin: 0; border: 1px solid var(--ink); border-radius: 18px; background: #f8f7f1f2; box-shadow: 0 12px 42px #191a1740; backdrop-filter: blur(16px); pointer-events: auto; }
+.itinerary-panel[hidden] { display: none; }
+.itinerary-content { min-height: 0; }
+.popup-scale { width: 300px; transform-origin: bottom center; will-change: transform; }
 
 @media (max-width: 1200px) and (min-width: 901px) {
   .workspace { grid-template-columns: minmax(0, 1fr) 340px; }
@@ -106,12 +140,15 @@ body.journey-open { overflow: hidden; }
   .hero-seal { right: 21%; top: 17%; }
   .poster-hero::after { right: 30px; bottom: 107px; font-size: 7px; }
   .journey-open { overflow: hidden; }
-  .journey-app { height: calc(100svh - 64px); min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-  .journey-app .trip-facts { flex: 0 0 65px; margin: 0 16px 14px; }
-  .journey-app .trip-facts .trip-manifesto { display: block; }
-  .day-navigation { flex: 0 0 72px; margin: 0 16px 14px; }
-  .workspace { flex: 1 1 auto; min-height: 0; height: auto; display: flex; flex-direction: column; padding: 0 16px 16px; gap: 14px; }
-  .map-section { flex: 0 0 45%; height: auto; min-height: 0; }
+  .journey-app { height: calc(100svh - 64px); }
+  .day-navigation { top: 16px; left: 50%; width: calc(100% - 32px); height: 54px; }
+  .day-tab { height: 54px; flex-basis: 86px; }
+  .overview-button { flex-basis: 78px; }
+  .itinerary-overlay { right: 16px; bottom: 16px; width: min(360px, calc(100% - 32px)); }
+  .itinerary-panel { max-height: min(60svh, 520px); }
+  .map-topbar { left: 16px; bottom: 20px; }
+  .maplibregl-ctrl-bottom-left { bottom: 70px; left: 12px; }
+  .maplibregl-ctrl-bottom-right { bottom: 62px; right: 12px; }
   .maplibregl-canvas, .maplibregl-canvas-container { touch-action: none; }
   .itinerary-panel { flex: 1 1 auto; min-height: 0; margin: 0; }
   .itinerary-content { overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
@@ -185,8 +222,9 @@ body.journey-open { overflow: hidden; }
 }
 
 @media (max-width: 600px) and (orientation: portrait) {
-  .map-section { flex-basis: 58%; min-height: 260px; }
-  .itinerary-panel { flex-basis: 42%; }
+  .itinerary-overlay { width: calc(100% - 24px); right: 12px; bottom: 12px; }
+  .itinerary-panel { max-height: 58svh; }
+  .itinerary-toggle { min-height: 36px; }
 }
 
 @media (orientation: landscape) and (max-height: 540px) and (max-width: 900px) {
@@ -202,12 +240,13 @@ body.journey-open { overflow: hidden; }
   .hero-stamp > span { font-size: 46px; }
   .hero-route-note { display: none; }
   .poster-hero::after { bottom: 82px; }
-  .journey-app { height: calc(100svh - 48px); min-height: 0; }
-  .journey-app .trip-facts { display: none; }
-  .day-navigation { flex-basis: 60px; margin-bottom: 10px; }
-  .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 310px; flex: 1 1 auto; min-height: 0; height: auto; padding-bottom: 10px; }
-  .map-section { height: 100%; min-height: 0; }
-  .map-bottom-card { bottom: 18px; }
+  .journey-app { height: calc(100svh - 48px); }
+  .day-navigation { top: 10px; left: 50%; width: calc(100% - 24px); height: 48px; }
+  .day-tab { height: 48px; flex-basis: 78px; }
+  .overview-button { flex-basis: 70px; }
+  .itinerary-overlay { right: 12px; bottom: 12px; width: 310px; }
+  .itinerary-panel { max-height: 70svh; }
+  .map-topbar { left: 12px; bottom: 16px; }
   .map-gesture-hint, .map-watermark { display: none; }
 }
 

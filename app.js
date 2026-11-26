@@ -1,13 +1,8 @@
 const tripDays = window.TRIP_DATA.days;
-const overview = document.querySelector(".overview-button");
 const dayTabs = document.querySelector("#day-tabs");
 const itineraryContent = document.querySelector("#itinerary-content");
-const mapLabel = document.querySelector("#map-label");
-const mapStamp = document.querySelector("#map-day-stamp");
-const mapTitle = document.querySelector("#map-day-title");
-const mapSubtitle = document.querySelector("#map-day-subtitle");
-const mapWatermark = document.querySelector("#map-watermark");
-const mapFocusButton = document.querySelector("#map-focus");
+const itineraryPanel = document.querySelector("#itinerary-panel");
+const itineraryToggle = document.querySelector("#itinerary-toggle");
 const notesDialog = document.querySelector("#notes-dialog");
 const locale = window.TRIP_DATA.locale;
 
@@ -22,23 +17,6 @@ const markers = [];
 const modeIcons = { rail: "train", walk: "walk", flight: "plane", bus: "bus" };
 function localize(field, value) {
   return locale[field]?.[value] || value;
-}
-
-function localizeTransport(value) {
-  return value
-    .replaceAll("步行", "徒歩")
-    .replaceAll("高铁", "高速鉄道")
-    .replaceAll("飞机", "飛行機")
-    .replaceAll("市域机场线", "空港連絡線")
-    .replaceAll("京急机场线", "京急空港線")
-    .replaceAll("东京单轨电车", "東京モノレール")
-    .replaceAll("巴士", "バス")
-    .replaceAll("地铁", "地下鉄")
-    .replaceAll("秩父铁道", "秩父鉄道")
-    .replaceAll("东海道新干线", "東海道新幹線")
-    .replaceAll("江之电", "江ノ電")
-    .replaceAll("西武线", "西武線")
-    .replaceAll("南海电铁", "南海電鉄");
 }
 
 function escapeHtml(value) {
@@ -138,19 +116,6 @@ function renderOverview() {
 function setMapText(dayId) {
   const day = tripDays.find((item) => item.id === Number(dayId));
   document.documentElement.style.setProperty("--accent", day ? day.color : "#ed3b23");
-  if (!day) {
-    mapLabel.textContent = "8日間のルート";
-    mapStamp.textContent = "ALL";
-    mapTitle.textContent = "東京 → 大阪";
-    mapSubtitle.textContent = "5つの街と自然、聖地を巡る";
-    mapWatermark.textContent = "08";
-    return;
-  }
-  mapLabel.textContent = `DAY ${String(day.id).padStart(2, "0")} · ${localize("city", day.city)}`;
-  mapStamp.textContent = String(day.id).padStart(2, "0");
-  mapTitle.textContent = localize("shortTitle", day.shortTitle);
-  mapSubtitle.textContent = localizeTransport(day.transport);
-  mapWatermark.textContent = String(day.id).padStart(2, "0");
 }
 
 function selectDay(dayId, fit = true) {
@@ -195,15 +160,27 @@ function fitMap(dayId) {
 }
 
 function updateMapVisibility() {
-  markers.forEach(({ element, dayId }) => {
-    element.classList.toggle("is-dimmed", selectedDay !== "all" && selectedDay !== dayId);
-    element.style.display = selectedDay === "all" || selectedDay === dayId ? "grid" : "none";
+  markers.forEach(({ marker, dayId }) => {
+    marker.getElement().hidden = selectedDay !== "all" && selectedDay !== dayId;
   });
   tripDays.forEach((day) => {
     const visible = selectedDay === "all" || selectedDay === day.id;
     map.setLayoutProperty(`route-${day.id}`, "visibility", visible ? "visible" : "none");
     map.setLayoutProperty(`route-halo-${day.id}`, "visibility", visible ? "visible" : "none");
   });
+}
+
+function markerScaleAtZoom() {
+  return 2 ** ((map.getZoom() - 11) / 8);
+}
+
+function markerPopupOffset(scale) {
+  return Math.ceil(39 * scale) + 4;
+}
+
+function syncPopupScale(scale) {
+  const popupScale = activePopup?.getElement()?.querySelector(".popup-scale");
+  if (popupScale) popupScale.style.transform = `scale(${scale})`;
 }
 
 function showStop(dayId, stopIndex, flyToStop = true, scrollToCard = false) {
@@ -214,10 +191,10 @@ function showStop(dayId, stopIndex, flyToStop = true, scrollToCard = false) {
   });
   if (mapReady) {
     if (activePopup) activePopup.remove();
-    activePopup = new maplibregl.Popup({ offset: 22, closeButton: true })
+    activePopup = new maplibregl.Popup({ offset: markerPopupOffset(markerScaleAtZoom()), closeButton: true, subpixelPositioning: true })
       .setLngLat(stop.coords)
       .setHTML(`
-        <div style="--popup-color:${day.color}">
+        <div class="popup-scale" style="--popup-color:${day.color}">
           <span class="popup-kicker">DAY ${day.id} · ${escapeHtml(stop.time)} · ${escapeHtml(stop.category)}</span>
           <h3 class="popup-title">${escapeHtml(stop.jp)}</h3>
           <p class="popup-jp" lang="zh-CN">${escapeHtml(stop.name)}</p>
@@ -225,6 +202,7 @@ function showStop(dayId, stopIndex, flyToStop = true, scrollToCard = false) {
         </div>
       `)
       .addTo(map);
+    syncPopupScale(markerScaleAtZoom());
     if (flyToStop) map.flyTo({ center: stop.coords, zoom: Math.max(map.getZoom(), 12.5), duration: 900, essential: false });
   }
   document.querySelectorAll(".stop-card").forEach((card) => {
@@ -286,8 +264,19 @@ async function initializeMap() {
   new ResizeObserver(resizeMap).observe(document.querySelector("#journey-app"));
   window.addEventListener("resize", resizeMap);
   map.touchZoomRotate.disableRotation();
-  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-left");
   map.addControl(new maplibregl.ScaleControl({ maxWidth: 90, unit: "metric" }), "bottom-right");
+  const mapContainer = map.getContainer();
+  const resizeMarkers = () => {
+    const scale = markerScaleAtZoom();
+    mapContainer.style.setProperty("--trip-marker-scale", scale);
+    if (activePopup?.isOpen()) {
+      activePopup.setOffset(markerPopupOffset(scale));
+      syncPopupScale(scale);
+    }
+  };
+  resizeMarkers();
+  map.on("zoom", resizeMarkers);
 
   function activateLocalTiles() {
     if (mapTileMode === "local") return;
@@ -323,12 +312,12 @@ async function initializeMap() {
       day.stops.forEach((stop, stopIndex) => {
         const anchor = document.createElement("div");
         anchor.className = "trip-marker-anchor";
-        anchor.removeAttribute("role");
-        anchor.removeAttribute("aria-label");
+        anchor.style.setProperty("--marker-color", day.color);
+        const pin = document.createElement("div");
+        pin.className = "trip-marker-pin";
         const element = document.createElement("button");
         element.type = "button";
         element.className = "trip-marker";
-        element.style.setProperty("--marker-color", day.color);
         element.textContent = stopIndex === 0 ? String(day.id) : `${day.id}.${stopIndex + 1}`;
         element.setAttribute("aria-label", `${day.id}日目 ${stop.jp}`);
         element.title = stop.name;
@@ -336,8 +325,11 @@ async function initializeMap() {
           event.stopPropagation();
           revealStop(day.id, stopIndex);
         });
-        anchor.appendChild(element);
-        const marker = new maplibregl.Marker({ element: anchor, anchor: "center" }).setLngLat(stop.coords).addTo(map);
+        pin.appendChild(element);
+        anchor.appendChild(pin);
+        const marker = new maplibregl.Marker({ element: anchor, anchor: "center", subpixelPositioning: true }).setLngLat(stop.coords).addTo(map);
+        anchor.removeAttribute("role");
+        anchor.removeAttribute("aria-label");
         markers.push({ marker, element, dayId: day.id, stopIndex });
       });
     });
@@ -428,16 +420,11 @@ document.addEventListener("touchmove", (event) => {
 }, { passive: false });
 
 document.querySelector("#fit-route").addEventListener("click", () => fitMap(selectedDay));
-mapFocusButton.addEventListener("click", () => {
-  const focusMode = document.body.classList.toggle("map-focus-mode");
-  mapFocusButton.querySelector("span").textContent = focusMode ? "戻る" : "全画面";
-  mapFocusButton.setAttribute("aria-pressed", String(focusMode));
-  map.resize();
-  fitMap(selectedDay);
-});
-document.querySelector("#next-day").addEventListener("click", () => {
-  const nextDay = selectedDay === "all" || selectedDay === tripDays.length ? 1 : selectedDay + 1;
-  selectDay(nextDay);
+itineraryToggle.addEventListener("click", () => {
+  const expanded = itineraryToggle.getAttribute("aria-expanded") !== "true";
+  itineraryToggle.setAttribute("aria-expanded", String(expanded));
+  itineraryPanel.hidden = !expanded;
+  requestAnimationFrame(() => map?.resize());
 });
 document.querySelector("#open-notes").addEventListener("click", () => notesDialog.showModal());
 document.querySelector("#close-notes").addEventListener("click", () => notesDialog.close());
@@ -448,7 +435,7 @@ notesDialog.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && document.body.classList.contains("map-focus-mode")) mapFocusButton.click();
+  if (event.key === "Escape" && itineraryToggle.getAttribute("aria-expanded") === "true") itineraryToggle.click();
 });
 
 renderDayTabs();
