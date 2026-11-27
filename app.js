@@ -130,8 +130,10 @@ function selectDay(dayId, fit = true) {
   const day = tripDays.find((item) => item.id === selectedDay);
   const selectedTab = document.querySelector(`.day-tab[data-day="${selectedDay}"]`);
   if (selectedTab && window.innerWidth <= 900) {
-    const navigation = document.querySelector(".day-navigation");
-    navigation.scrollTo({ left: selectedTab.offsetLeft - navigation.clientWidth + selectedTab.clientWidth, behavior: "instant" });
+    dayTabs.scrollTo({
+      left: Math.max(0, selectedTab.offsetLeft - (dayTabs.clientWidth - selectedTab.offsetWidth) / 2),
+      behavior: "instant"
+    });
   }
   itineraryContent.innerHTML = day ? renderDay(day) : renderOverview();
   itineraryContent.scrollTo({ top: 0, behavior: "instant" });

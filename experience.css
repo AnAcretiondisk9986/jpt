@@ -141,7 +141,18 @@ body.journey-open { overflow: hidden; }
   .journey-open { overflow: hidden; }
   .journey-app { height: calc(100svh - 64px); }
   .day-navigation { top: 16px; left: 50%; width: calc(100% - 32px); height: 54px; }
-  .day-tab { height: 54px; flex-basis: 86px; }
+  .day-tabs {
+    position: relative;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .day-tabs::-webkit-scrollbar { display: none; }
+  .day-tab { flex: 0 0 86px; height: 54px; }
   .overview-button { flex-basis: 78px; }
   .itinerary-overlay { right: 16px; bottom: 16px; width: min(360px, calc(100% - 32px)); }
   .itinerary-panel { max-height: min(60svh, 520px); }
